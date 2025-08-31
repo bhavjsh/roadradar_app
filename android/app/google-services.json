@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "544316082843",
+    "project_id": "roadradar-5b6f5",
+    "storage_bucket": "roadradar-5b6f5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:544316082843:android:f0a1c2f34b2b4e0a36543e",
+        "android_client_info": {
+          "package_name": "com.example.roadradar_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLFJ2lX3RD07xqrqT5t4sEDhfBMcx64b0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
