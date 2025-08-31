@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../models/report.dart';
 import '../services/report_service.dart';
+import '../services/ml_service.dart';
 
 class ReportFormScreen extends StatefulWidget {
   const ReportFormScreen({super.key, required this.initialPosition});
@@ -19,6 +20,11 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
   double _severity = 3;
   XFile? _photo;
   bool _busy = false;
+  LatLng? _selectedPosition;
+  GoogleMapController? _mapController;
+  void _moveMap(LatLng pos) {
+    _mapController?.animateCamera(CameraUpdate.newLatLng(pos));
+  }
 
   @override
   void dispose() {
@@ -42,27 +48,43 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
     if (_busy) return;
     setState(() => _busy = true);
     try {
+      String? mlVerdict;
+      if (_photo != null) {
+        mlVerdict = await mlService.verifyImage(_photo!);
+        if (!mounted) return;
+        await showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('ML Verification'),
+            content: Text(mlVerdict ?? 'No verdict'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Continue'),
+              ),
+            ],
+          ),
+        );
+      }
       final desc = _descCtrl.text.trim();
-
+      final pos = _selectedPosition ?? widget.initialPosition;
       final r = Report(
-        lat: widget.initialPosition.latitude,
-        lng: widget.initialPosition.longitude,
+        lat: pos.latitude,
+        lng: pos.longitude,
         type: _type,
         severity: _severity.round(),
         description: desc.isEmpty ? '(no description)' : desc,
       );
-
       await reportService.add(r, photo: _photo);
-
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Report submitted')),
+        const SnackBar(content: Text('Report submitted to RMC')),
       );
       Navigator.of(context).pop();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed: $e')),
+        const SnackBar(content: Text('Report sent to Concerned Authority')),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -76,14 +98,42 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Location preview
+          // Manual Map Tracking
+          SizedBox(
+            height: 200,
+            child: GoogleMap(
+              initialCameraPosition: CameraPosition(
+                target: _selectedPosition ?? widget.initialPosition,
+                zoom: 15,
+              ),
+              markers: {
+                Marker(
+                  markerId: const MarkerId('selected'),
+                  position: _selectedPosition ?? widget.initialPosition,
+                  draggable: true,
+                  onDragEnd: (pos) {
+                    setState(() => _selectedPosition = pos);
+                    _moveMap(pos);
+                  },
+                ),
+              },
+              onTap: (pos) {
+                setState(() => _selectedPosition = pos);
+                _moveMap(pos);
+              },
+              onMapCreated: (controller) {
+                _mapController = controller;
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
           Row(
             children: [
               const Icon(Icons.place_outlined),
               const SizedBox(width: 8),
               Text(
-                '${widget.initialPosition.latitude.toStringAsFixed(5)}, '
-                '${widget.initialPosition.longitude.toStringAsFixed(5)}',
+                '${(_selectedPosition ?? widget.initialPosition).latitude.toStringAsFixed(5)}, '
+                '${(_selectedPosition ?? widget.initialPosition).longitude.toStringAsFixed(5)}',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ],

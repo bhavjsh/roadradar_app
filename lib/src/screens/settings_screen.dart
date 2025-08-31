@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../services/auth_service.dart';
 
 class _Prefs {
   static const mapType = 'pref.mapType';
@@ -18,6 +19,12 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  Future<void> _logout() async {
+    await authService.signOut();
+    if (mounted) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    }
+  }
   bool _loading = true;
   MapType _mapType = MapType.normal;
   bool _autoCenter = true;
@@ -203,6 +210,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
               icon: const Icon(Icons.restore),
               label: const Text('Reset to defaults'),
               onPressed: _reset,
+            ),
+          ),
+          const SizedBox(height: 24),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.logout),
+              label: const Text('Logout'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+              onPressed: _logout,
             ),
           ),
           const SizedBox(height: 24),

@@ -22,6 +22,9 @@ class Report {
   final DateTime? createdAt;
   final String? status; // pending | reviewed | resolved
   final String? userId;
+  final int upvotes;
+  final int downvotes;
+  final int requestsInRadius;
 
   Report({
     this.id,
@@ -34,6 +37,9 @@ class Report {
     this.createdAt,
     this.status,
     this.userId,
+    this.upvotes = 0,
+    this.downvotes = 0,
+    this.requestsInRadius = 0,
   });
 
   Map<String, dynamic> toMap() {
@@ -47,6 +53,9 @@ class Report {
       if (createdAt != null) 'createdAt': Timestamp.fromDate(createdAt!),
       if (status != null) 'status': status,
       if (userId != null) 'userId': userId,
+      'upvotes': upvotes,
+      'downvotes': downvotes,
+      'requestsInRadius': requestsInRadius,
     };
   }
 
@@ -65,6 +74,9 @@ class Report {
           : null,
       status: (m['status'] as String?) ?? 'pending',
       userId: m['userId'] as String?,
+      upvotes: (m['upvotes'] as int?) ?? 0,
+      downvotes: (m['downvotes'] as int?) ?? 0,
+      requestsInRadius: (m['requestsInRadius'] as int?) ?? 0,
     );
   }
 
@@ -79,6 +91,9 @@ class Report {
     DateTime? createdAt,
     String? status,
     String? userId,
+    int? upvotes,
+    int? downvotes,
+    int? requestsInRadius,
   }) {
     return Report(
       id: id ?? this.id,
@@ -91,6 +106,9 @@ class Report {
       createdAt: createdAt ?? this.createdAt,
       status: status ?? this.status,
       userId: userId ?? this.userId,
+      upvotes: upvotes ?? this.upvotes,
+      downvotes: downvotes ?? this.downvotes,
+      requestsInRadius: requestsInRadius ?? this.requestsInRadius,
     );
   }
 }
